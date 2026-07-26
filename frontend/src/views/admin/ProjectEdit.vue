@@ -64,20 +64,6 @@ async function onUploadCover(event: Event) {
         <label>详细介绍</label>
         <textarea v-model="projectDraft.content" rows="4" placeholder="更详细的描述" />
       </div>
-      <div class="form-row">
-        <label>封面</label>
-        <div class="cover-edit">
-          <div class="cover-preview">
-            <img v-if="projectDraft.cover" :src="projectDraft.cover" alt="封面预览" />
-            <span v-else class="muted" style="font-size: 0.84rem;">暂无封面</span>
-          </div>
-          <input v-model="projectDraft.cover" placeholder="图片地址 /uploads/xxx.png" />
-          <label class="upload-btn">
-            上传封面图片
-            <input type="file" accept="image/*" hidden @change="onUploadCover" />
-          </label>
-        </div>
-      </div>
       <div class="form-row two-col">
         <div>
           <label>项目链接</label>

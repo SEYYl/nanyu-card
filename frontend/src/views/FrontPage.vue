@@ -74,10 +74,6 @@ onMounted(async () => {
       <h2>项目展示</h2>
       <div v-if="projects.length" class="projects">
         <article v-for="project in projects" :key="project.id" class="project-card">
-          <div class="project-cover-wrap">
-            <img v-if="project.cover" :src="project.cover" :alt="project.title" class="project-cover" />
-            <div v-else class="project-cover project-cover-placeholder">项目封面</div>
-          </div>
           <div class="project-body">
             <h3>{{ project.title }}</h3>
             <p class="small">{{ project.description }}</p>
