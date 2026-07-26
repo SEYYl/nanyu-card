@@ -1,9 +1,22 @@
 <script setup lang="ts">
+import { confirmDialog } from '../../composables/useDialog'
 import {
   draft,
-  saveSiteConfig, resetSiteDraft,
-  uploadImage, clearAvatar, previewSite,
-} from '../../composables/useStore'
+  saveSiteConfig, resetSiteDraft, clearAvatar, previewSite,
+} from '../../composables/useSite'
+import { handleImageUpload } from '../../composables/useUpload'
+
+async function handleClearAvatar() {
+  const ok = await confirmDialog('清除头像', '确认清除当前头像？')
+  if (ok) clearAvatar()
+}
+
+async function onUploadAvatar(event: Event) {
+  const url = await handleImageUpload(event)
+  if (url) {
+    draft.value.avatar = url
+  }
+}
 </script>
 
 <template>
@@ -45,9 +58,9 @@ import {
             <div class="action-row">
               <label class="upload-btn">
                 选择图片上传
-                <input type="file" accept="image/*" hidden @change="(event) => uploadImage('avatar', event)" />
+                <input type="file" accept="image/*" hidden @change="onUploadAvatar" />
               </label>
-              <button v-if="draft.avatar" class="secondary danger" type="button" @click="clearAvatar">清除头像</button>
+              <button v-if="draft.avatar" class="secondary danger" type="button" @click="handleClearAvatar">清除头像</button>
             </div>
           </div>
         </div>

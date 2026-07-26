@@ -2,7 +2,7 @@
 import {
   highlightDraft,
   saveHighlights, addHighlight, removeHighlight, moveHighlight,
-} from '../../composables/useStore'
+} from '../../composables/useSite'
 </script>
 
 <template>

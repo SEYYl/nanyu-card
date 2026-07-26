@@ -1,11 +1,23 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { changePassword, adminLogout } from '../../composables/useStore'
+import { confirmDialog, promptDialog } from '../../composables/useDialog'
+import { changePassword, adminLogout } from '../../composables/useAuth'
+import { adminMessage } from '../../composables/useToast'
 
 const router = useRouter()
 
+async function handleChangePassword() {
+  const newPassword = await promptDialog('修改密码', '请输入新密码（至少 4 位）')
+  if (!newPassword) return
+  const result = await changePassword(newPassword)
+  adminMessage.value = result.message
+}
+
 async function handleLogout() {
+  const ok = await confirmDialog('退出登录', '确认退出当前管理后台会话？')
+  if (!ok) return
   await adminLogout()
+  adminMessage.value = '已退出登录'
   router.replace('/admin/login')
 }
 </script>
@@ -22,7 +34,7 @@ async function handleLogout() {
         <p style="font-size: 0.86rem; color: var(--text-muted);">点击下方按钮，输入新密码（至少 4 位字符）。</p>
       </div>
       <div class="action-row">
-        <button @click="changePassword">修改密码</button>
+        <button @click="handleChangePassword">修改密码</button>
       </div>
     </div>
 

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { site, adminLogout } from '../../composables/useStore'
+import { site } from '../../composables/useSite'
+import { adminLogout } from '../../composables/useAuth'
 import { currentTheme, toggleTheme } from '../../composables/useTheme'
+import { adminMessage } from '../../composables/useToast'
 
 defineProps<{ open: boolean }>()
 const emit = defineEmits<{ 'update:open': [val: boolean] }>()
@@ -15,6 +17,7 @@ function navTo(path: string) {
 
 async function handleLogout() {
   await adminLogout()
+  adminMessage.value = '已退出登录'
   router.replace('/admin/login')
 }
 </script>

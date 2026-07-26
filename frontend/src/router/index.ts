@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import FrontPage from '../views/FrontPage.vue'
+import { checkSession, adminAuthenticated } from '../composables/useAuth'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -25,6 +26,14 @@ const router = createRouter({
     },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
+})
+
+// 全局路由守卫：后台页面自动校验登录态
+router.beforeEach(async (to) => {
+  if (to.path.startsWith('/admin') && to.path !== '/admin/login') {
+    await checkSession()
+    if (!adminAuthenticated.value) return '/admin/login'
+  }
 })
 
 export default router

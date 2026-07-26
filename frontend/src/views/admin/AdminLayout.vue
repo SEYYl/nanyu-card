@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AdminSidebar from '../../components/admin/AdminSidebar.vue'
-import { adminAuthenticated, checkSession, toastVisible, toastText } from '../../composables/useStore'
+import { adminAuthenticated } from '../../composables/useAuth'
+import { toastVisible, toastText } from '../../composables/useToast'
+import ConfirmModal from '../../components/common/ConfirmModal.vue'
 
 const router = useRouter()
 const route = useRoute()
 const sidebarOpen = ref(false)
-const checking = ref(true)
 
 const pageTitles: Record<string, string> = {
   '/admin': '数据看板',
@@ -18,31 +19,20 @@ const pageTitles: Record<string, string> = {
   '/admin/settings': '修改密码',
 }
 
-onMounted(async () => {
-  await checkSession()
-  if (!adminAuthenticated.value) {
-    router.replace('/admin/login')
-  }
-  checking.value = false
-})
-
-watch(adminAuthenticated, (val) => {
-  if (!val && !checking.value) router.replace('/admin/login')
-})
-
+// 路由变更时关闭移动端侧边栏
 watch(() => route.path, () => {
   sidebarOpen.value = false
+})
+
+// 路由守卫已校验登录态，这里做安全兜底
+watch(adminAuthenticated, (val) => {
+  if (!val) router.replace('/admin/login')
 })
 </script>
 
 <template>
-  <div v-if="checking" style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
-    <p style="color: var(--text-muted);">验证登录态...</p>
-  </div>
-
-  <div v-else-if="!adminAuthenticated" style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
-    <p style="color: var(--text-muted); margin-bottom: 16px;">请先登录</p>
-    <button @click="router.push('/admin/login')">前往登录</button>
+  <div v-if="!adminAuthenticated" style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
+    <p style="color: var(--text-muted);">验证登录态中...</p>
   </div>
 
   <div v-else class="admin-layout">
@@ -68,4 +58,7 @@ watch(() => route.path, () => {
       </main>
     </div>
   </div>
+
+  <!-- 全局弹窗 -->
+  <ConfirmModal />
 </template>

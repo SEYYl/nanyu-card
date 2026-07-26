@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { focusAreasText, skillsText, saveTaxonomy } from '../../composables/useStore'
+import { focusAreasText, skillsText, saveTaxonomy } from '../../composables/useSite'
 </script>
 
 <template>

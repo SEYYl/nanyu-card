@@ -1,8 +1,18 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { loadSiteData, site, projects, stats } from '../../composables/useStore'
+import { onMounted, computed } from 'vue'
+import { loadSiteData, site } from '../../composables/useSite'
+import { projects } from '../../composables/useProjects'
 
-onMounted(() => loadSiteData())
+onMounted(async () => {
+  const result = await loadSiteData()
+  projects.value = result.projects
+})
+
+const stats = computed(() => ({
+  projects: projects.value.length,
+  skills: site.value.skills.length,
+  highlights: site.value.highlights.length,
+}))
 
 const statItems = [
   { key: 'projects', label: '项目数量', icon: '📁' },

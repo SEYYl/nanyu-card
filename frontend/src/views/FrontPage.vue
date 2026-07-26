@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { site, projects, socialLinks, loadSiteData } from '../composables/useStore'
+import { site, socialLinks, loadSiteData } from '../composables/useSite'
+import { projects } from '../composables/useProjects'
 
 const loading = ref(true)
 
 onMounted(async () => {
-  await loadSiteData()
+  const result = await loadSiteData()
+  projects.value = result.projects
   loading.value = false
 })
 </script>

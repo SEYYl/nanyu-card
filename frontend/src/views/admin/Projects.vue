@@ -1,12 +1,21 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { projects, deleteProject, editProject } from '../../composables/useStore'
+import { confirmDialog } from '../../composables/useDialog'
+import { projects, deleteProject, editProject } from '../../composables/useProjects'
 
 const router = useRouter()
 
 function handleEdit(project: typeof projects.value[0]) {
   editProject(project)
   router.push(`/admin/projects/${project.id}`)
+}
+
+async function handleDelete(id: number) {
+  const project = projects.value.find((p) => p.id === id)
+  const ok = await confirmDialog('确认删除', `确认删除「${project?.title || '该项目'}」？此操作不可撤销。`)
+  if (ok) {
+    await deleteProject(id, project?.title || '')
+  }
 }
 </script>
 
@@ -41,7 +50,7 @@ function handleEdit(project: typeof projects.value[0]) {
             <td>
               <div class="table-actions">
                 <button class="secondary" @click="handleEdit(project)">编辑</button>
-                <button class="secondary danger" @click="deleteProject(project.id)">删除</button>
+                <button class="secondary danger" @click="handleDelete(project.id)">删除</button>
               </div>
             </td>
           </tr>

@@ -4,8 +4,8 @@ import { useRouter, useRoute } from 'vue-router'
 import {
   projects, projectDraft, editingProjectId,
   saveProject, resetProjectDraft, editProject,
-  uploadImage,
-} from '../../composables/useStore'
+} from '../../composables/useProjects'
+import { handleImageUpload } from '../../composables/useUpload'
 
 const router = useRouter()
 const route = useRoute()
@@ -33,6 +33,13 @@ async function handleSave() {
 function handleCancel() {
   resetProjectDraft()
   router.push('/admin/projects')
+}
+
+async function onUploadCover(event: Event) {
+  const url = await handleImageUpload(event)
+  if (url) {
+    projectDraft.value.cover = url
+  }
 }
 </script>
 
@@ -67,7 +74,7 @@ function handleCancel() {
           <input v-model="projectDraft.cover" placeholder="图片地址 /uploads/xxx.png" />
           <label class="upload-btn">
             上传封面图片
-            <input type="file" accept="image/*" hidden @change="(event) => uploadImage('cover', event)" />
+            <input type="file" accept="image/*" hidden @change="onUploadCover" />
           </label>
         </div>
       </div>
