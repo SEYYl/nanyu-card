@@ -664,6 +664,36 @@ curl -sS -H "Origin: https://你的域名" https://你的域名/api/health
 
 如果 `docker compose config` 报 `additional properties 'environment' not allowed`，说明你把 `environment:` 写到了 Compose 文件顶层，它必须在 `services → app` 下面，和 `ports`、`volumes` 同级缩进。
 
+### 问题 9：「登录成功但刷新后还是未登录 / 后台进不去」
+
+**特征**：输入账号密码点登录，页面好像有反应但刷新后又回到登录页，或者直接没反应。
+
+**原因**：通过 Cloudflare / Nginx 等反向代理部署时，后端的 Session Cookie 没有正确下发到浏览器。Express 默认不信任反向代理，导致 `req.secure` 判断错误，Cookie 的 `Secure` 标记与实际连接不匹配。
+
+**解决**：确保后端代码中已配置以下两项（当前项目已内置）：
+
+```ts
+app.set('trust proxy', 1); // 信任第一层反向代理
+
+session({
+  cookie: {
+    secure: 'auto', // 根据 X-Forwarded-Proto 自动判断
+    // ...
+  },
+})
+```
+
+同时在 Cloudflare 中将 **SSL/TLS 加密模式** 设为 **Full**（推荐）或 **Full (Strict)**。不要用 Flexible 模式——它会让 Cloudflare 用 HTTP 连接你的服务器，导致安全 Cookie 无法正常工作。
+
+验证方法：
+
+```bash
+# 从服务器本地测试，确认 Set-Cookie 头存在
+curl -v -X POST http://localhost:3000/api/admin/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"你的密码"}' 2>&1 | grep -i set-cookie
+```
+
 ---
 
 ## 附录：完整命令速查表
