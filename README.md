@@ -87,16 +87,20 @@ npm run dev
 ### 方式二：Docker Compose（推荐）
 
 ```bash
-# 1. 复制环境变量（如需调整）
+# 1. 复制环境变量模板
 cp .env.example .env
 
-# 2. 构建并启动
+# 2. 编辑 .env，至少修改 SESSION_SECRET 和 SITE_URL
+#    SITE_URL 必须填写你的 HTTPS 域名，如 https://nanyu.xin
+nano .env
+
+# 3. 构建并启动
 docker compose up -d --build
 
-# 3. 查看日志
+# 4. 查看日志
 docker compose logs -f app
 
-# 4. 停止
+# 5. 停止
 docker compose down
 ```
 
@@ -229,6 +233,7 @@ docker compose up -d --build
 | `PORT` | `3000` | 后端监听端口 |
 | `NODE_ENV` | （自动） | `production` 时 Session Cookie 启用 `secure` |
 | `SESSION_SECRET` | `nanyu-card-secret` | Session 加密密钥，**生产环境务必修改** |
+| `SITE_URL` | （空） | 你的 HTTPS 域名（如 `https://nanyu.xin`），生产环境 CORS 白名单，**必须配置，否则页面白屏** |
 | `DB_PATH` | `backend/data/app.json` | 数据文件路径（容器内建议挂载到 `/app/data/app.json`） |
 
 完整环境变量模板见 `.env.example`。
