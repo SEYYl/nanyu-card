@@ -5,7 +5,6 @@ import {
   projects, projectDraft, editingProjectId,
   saveProject, resetProjectDraft, editProject,
 } from '../../composables/useProjects'
-import { handleImageUpload } from '../../composables/useUpload'
 
 const router = useRouter()
 const route = useRoute()
@@ -33,13 +32,6 @@ async function handleSave() {
 function handleCancel() {
   resetProjectDraft()
   router.push('/admin/projects')
-}
-
-async function onUploadCover(event: Event) {
-  const url = await handleImageUpload(event)
-  if (url) {
-    projectDraft.value.cover = url
-  }
 }
 </script>
 
