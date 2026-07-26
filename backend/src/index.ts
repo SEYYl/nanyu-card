@@ -38,6 +38,7 @@ const upload = multer({
 
 // ---- Express 初始化 ----
 const app = express();
+app.set('trust proxy', 1); // 信任 Cloudflare / Nginx 反向代理的第一层
 const requestedPort = Number(process.env.PORT || 3000);
 const port = Number.isInteger(requestedPort) && requestedPort > 0 ? requestedPort : 3000;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -87,7 +88,7 @@ app.use(
     cookie: {
       httpOnly: true,
       sameSite: 'lax',
-      secure: isProduction,
+      secure: 'auto', // 自动根据 X-Forwarded-Proto 判断，兼容 Cloudflare 各种 SSL 模式
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 天
     },
   }),
