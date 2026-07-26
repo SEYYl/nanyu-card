@@ -10,7 +10,7 @@ services:
     environment:
       PORT: 3000
       NODE_ENV: production
-      SESSION_SECRET: nanyu-card-secret
+      SESSION_SECRET: ${SESSION_SECRET}
       DB_PATH: /app/data/app.json
     volumes:
       - ./data:/app/data

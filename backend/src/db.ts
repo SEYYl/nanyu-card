@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -209,16 +210,33 @@ function loadState(): StoredState {
   }
 }
 
+let writeScheduled = false;
+
 function saveState(nextState: StoredState): void {
   state = nextState;
-  fs.writeFileSync(dbPath, JSON.stringify(nextState, null, 2));
+  if (!writeScheduled) {
+    writeScheduled = true;
+    setImmediate(() => {
+      writeScheduled = false;
+      try {
+        fs.writeFileSync(dbPath, JSON.stringify(state, null, 2));
+      } catch (err) {
+        console.error('[DB] 数据写入失败:', err);
+      }
+    });
+  }
 }
 
 function createAdminUser(): StoredUser {
+  const defaultPassword = crypto.randomBytes(12).toString('hex');
+  console.log(`\n========================================`);
+  console.log(`  初始管理员密码: ${defaultPassword}`);
+  console.log(`  请登录后台后立即修改密码`);
+  console.log(`========================================\n`);
   return {
     id: 1,
     username: 'admin',
-    password_hash: bcrypt.hashSync('admin123', 10),
+    password_hash: bcrypt.hashSync(defaultPassword, 10),
     created_at: new Date().toISOString(),
   };
 }
@@ -279,14 +297,20 @@ export function createProject(input: Omit<ProjectItem, 'id' | 'created_at' | 'ta
   return project;
 }
 
-export function updateProject(id: number, input: Partial<ProjectItem> & { tags?: string[] }): ProjectItem | null {
+const ALLOWED_PROJECT_FIELDS = ['title', 'cover', 'description', 'content', 'url', 'github', 'tags', 'sort'] as const;
+
+type AllowedProjectField = (typeof ALLOWED_PROJECT_FIELDS)[number];
+
+export function updateProject(id: number, input: Partial<Record<AllowedProjectField | 'id' | 'created_at', unknown>>): ProjectItem | null {
   const existing = state.projects.find((item) => item.id === id);
   if (!existing) return null;
-  Object.assign(existing, {
-    ...existing,
-    ...input,
-    tags: input.tags ?? existing.tags,
-  });
+
+  for (const key of ALLOWED_PROJECT_FIELDS) {
+    if (key in input) {
+      (existing as unknown as Record<string, unknown>)[key] = input[key];
+    }
+  }
+
   saveState(state);
   return existing;
 }

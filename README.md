@@ -77,9 +77,10 @@ npm run dev
 | 字段 | 值 |
 | --- | --- |
 | 用户名 | `admin` |
-| 密码 | `admin123` |
+| 密码 | **随机生成**，首次启动时打印在终端 / Docker 日志中 |
 
-> 首次登录后请立即在后台 **修改密码**。
+> 如何获取初始密码？见下方 [🔐 获取初始密码](#-获取初始密码)。
+> 登录后请立即在后台 **修改密码**。
 
 ---
 
@@ -158,11 +159,23 @@ server {
 
 部署到公网前请务必：
 
-- [ ] 修改默认密码 `admin123`
-- [ ] 设置强随机的 `SESSION_SECRET`
+- [ ] 登录后台后立即修改密码
+- [ ] 设置强随机的 `SESSION_SECRET`（`openssl rand -hex 32`）
 - [ ] 通过反向代理启用 HTTPS（否则浏览器不会保留登录 Cookie）
 - [ ] 不要直接对外暴露 3000 端口
 - [ ] 定期备份 `data/app.json` 与 `uploads/`
+
+后端已内置以下安全措施：
+
+| 措施 | 说明 |
+|------|------|
+| Helmet | CSP / X-Frame-Options / X-Content-Type-Options 等安全头 |
+| Rate Limit | 登录 15 分钟最多 10 次，全局 API 15 分钟 500 次 |
+| CORS 白名单 | 生产环境仅允许 `SITE_URL` 指定的域名跨域 |
+| bcrypt | 密码使用 bcrypt 散列存储（cost 10） |
+| Session | httpOnly + sameSite:lax + secure（生产环境强制 HTTPS） |
+| 密码策略 | 最短 8 位 |
+| 随机初始密码 | 不再硬编码，每次全新部署生成不同密码 |
 
 ---
 
@@ -249,6 +262,58 @@ docker compose up -d --build
 
 ---
 
+## 🔐 获取初始密码
+
+首次部署时，系统会随机生成管理员密码并打印到控制台，**不会**写入任何文件。
+
+### 本地开发
+
+启动后端后，终端会直接显示：
+
+```
+========================================
+  初始管理员密码: a7f3e1c8b2d9
+  请登录后台后立即修改密码
+========================================
+```
+
+### Docker Compose
+
+```bash
+# 首次启动（前台运行，直接看到密码）
+docker compose up
+
+# 如果已经在后台运行，查看启动日志
+docker compose logs app | grep -A2 "初始管理员密码"
+```
+
+### 1Panel
+
+在容器管理页面点击「日志」，启动日志中会包含密码信息。
+
+### 密码只会打印一次
+
+- 密码**仅在** `data/app.json` 不存在时生成并打印
+- 一旦数据文件生成，后续重启**不会**再打印密码
+- 如果你错过了日志输出，或者忘记了密码，见下方 [故障排查 → 忘记了管理员密码](#4-忘记了管理员密码)
+
+### Docker 额外注意
+
+如果你用 `docker compose up -d` 首次启动（后台运行），终端不会显示日志。此时用以下命令查看：
+
+```bash
+docker compose logs app
+```
+
+建议首次部署时先用前台模式确认密码：
+
+```bash
+docker compose up    # 看到密码后 Ctrl+C
+docker compose up -d # 正式后台运行
+```
+
+---
+
 ## 🧯 故障排查
 
 ### 1. 打开后台页提示「请先登录」
@@ -267,10 +332,40 @@ docker compose up -d --build
 
 ### 4. 修改密码失败
 
-- 新密码至少 4 位
+- 新密码至少 **8** 位
 - 确认已登录态（Cookie 失效后请重新登录）
 
-### 5. 升级后字段为空
+### 5. 忘记了管理员密码
+
+密码以 bcrypt 散列形式存储在 `data/app.json` 中，无法反向破解。两种方法重置：
+
+**方法一：删掉 admin 用户，重启自动重建**
+
+删除 `data/app.json` 中 `users` 数组里的 admin 对象（保留其他数据），重启后会自动重新创建并打印新密码。
+
+> ⚠️ 如果直接删掉整个 `data/app.json`，站点配置和项目数据也会一起丢失。
+
+**方法二：用脚本直接替换密码散列（推荐）**
+
+在项目 `backend/` 目录下执行：
+
+```bash
+node -e "
+const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const data = JSON.parse(fs.readFileSync('data/app.json', 'utf8'));
+const user = data.users.find(u => u.username === 'admin');
+if (user) {
+  user.password_hash = bcrypt.hashSync('你的新密码', 10);
+  fs.writeFileSync('data/app.json', JSON.stringify(data, null, 2));
+  console.log('密码已更新');
+}
+"
+```
+
+重启服务后即可用新密码登录，**所有数据保持不变**。
+
+### 6. 升级后字段为空
 
 老版本数据文件没有 `focus_areas / skills / highlights`，程序会在加载时自动使用默认值。无需手动迁移。
 
