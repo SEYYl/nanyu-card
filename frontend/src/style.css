@@ -45,7 +45,7 @@
   --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
 
   /* Transitions */
-  --transition: 150ms ease;
+  --transition: 200ms cubic-bezier(0.25, 0.1, 0.25, 1);
 
   /* Layout */
   --container-max: 720px;
@@ -100,6 +100,12 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { scroll-behavior: smooth; scroll-padding-top: 72px; -webkit-font-smoothing: antialiased; }
+
+/* ---------- Route Transition ---------- */
+.page-enter-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+.page-leave-active { transition: opacity 0.15s ease; }
+.page-enter-from { opacity: 0; transform: translateY(8px); }
+.page-leave-to { opacity: 0; }
 
 body {
   font-family: var(--font);
@@ -268,8 +274,10 @@ p { line-height: 1.65; color: var(--text-secondary); }
 }
 .button.primary { background: var(--accent); color: white; }
 .button.primary:hover { background: var(--accent-hover); }
+.button.primary:active { transform: scale(0.97); }
 .button.secondary { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border); }
 .button.secondary:hover { background: var(--bg-hover); border-color: #ccc; }
+.button.secondary:active { transform: scale(0.97); }
 .small-btn { padding: 6px 14px; font-size: 0.82rem; }
 
 button {
@@ -284,6 +292,7 @@ button {
   transition: all var(--transition);
 }
 button:hover:not(:disabled) { background: var(--accent-hover); }
+button:active:not(:disabled) { transform: scale(0.97); }
 button:disabled { opacity: 0.4; cursor: not-allowed; }
 button.secondary { background: var(--bg); color: var(--text-secondary); border: 1px solid var(--border); }
 button.secondary:hover:not(:disabled) { background: var(--bg-hover); border-color: #ccc; }
@@ -752,6 +761,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 .admin-sidebar-nav button.nav-item:hover {
   background: var(--bg-hover);
   color: var(--text-primary);
+}
+
+.admin-sidebar-nav a:active,
+.admin-sidebar-nav button.nav-item:active {
+  transform: scale(0.98);
 }
 
 .admin-sidebar-nav a.active {

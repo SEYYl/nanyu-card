@@ -16,7 +16,11 @@ function closeNav() { navOpen.value = false }
 <template>
   <!-- Admin routes use their own AdminLayout -->
   <template v-if="isAdminRoute">
-    <router-view />
+    <router-view v-slot="{ Component }">
+      <Transition name="page" mode="out-in">
+        <component :is="Component" />
+      </Transition>
+    </router-view>
   </template>
 
   <!-- Front page with nav -->
@@ -42,7 +46,11 @@ function closeNav() { navOpen.value = false }
         </div>
       </nav>
 
-      <router-view />
+      <router-view v-slot="{ Component }">
+        <Transition name="page" mode="out-in">
+          <component :is="Component" />
+        </Transition>
+      </router-view>
     </div>
   </template>
 </template>
