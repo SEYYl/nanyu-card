@@ -7,16 +7,15 @@ import { vScrollReveal } from '../composables/useScrollReveal'
 import { showToast, toastVisible, toastText } from '../composables/useToast'
 
 const loading = ref(true)
-const copied = ref(false)
 
 function copyEmail() {
-  if (!site.email) return
-  navigator.clipboard.writeText(site.email).then(() => {
+  const email = site.value.email
+  if (!email) return
+  navigator.clipboard.writeText(email).then(() => {
     showToast('邮箱已复制')
   }).catch(() => {
-    // fallback for older browsers
     const input = document.createElement('textarea')
-    input.value = site.email
+    input.value = email
     document.body.appendChild(input)
     input.select()
     document.execCommand('copy')

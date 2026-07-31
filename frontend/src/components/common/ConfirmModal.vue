@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch, onMounted, onUnmounted } from 'vue'
+import { watch, onUnmounted } from 'vue'
 import { dialogState, confirmResult } from '../../composables/useDialog'
 
 function handleKeydown(e: KeyboardEvent) {
