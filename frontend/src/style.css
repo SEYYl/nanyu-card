@@ -99,13 +99,33 @@
 /* ---------- Reset / Base ---------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; scroll-padding-top: 72px; -webkit-font-smoothing: antialiased; }
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;           /* 去掉 iOS 点击时灰色遮罩 */
+  -webkit-touch-callout: none;                        /* 禁止长按弹出菜单 */
+}
+
+/* 触摸滚动优化 */
+@media (hover: none) and (pointer: coarse) {
+  * { -webkit-overflow-scrolling: touch; }
+  /* 扩大移动端点击区域 */
+  .button, button, .badge, .project-card, .nav-links a { min-height: 44px; }
+  .small-btn { min-height: 36px; }
+}
 
 /* ---------- Route Transition ---------- */
 .page-enter-active { transition: opacity 0.2s ease, transform 0.2s ease; }
 .page-leave-active { transition: opacity 0.15s ease; }
 .page-enter-from { opacity: 0; transform: translateY(8px); }
 .page-leave-to { opacity: 0; }
+
+/* Admin sub-page transition */
+.admin-page-enter-active { transition: opacity 0.18s ease, transform 0.18s ease; }
+.admin-page-leave-active { transition: opacity 0.12s ease, transform 0.12s ease; }
+.admin-page-enter-from { opacity: 0; transform: translateX(12px); }
+.admin-page-leave-to { opacity: 0; transform: translateX(-8px); }
 
 body {
   font-family: var(--font);
@@ -303,6 +323,61 @@ button:focus-visible, .button:focus-visible {
   outline-offset: 2px;
 }
 
+/* ---------- Ripple Animation ---------- */
+@keyframes ripple-anim {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* ---------- Card Click State ---------- */
+.project-card {
+  cursor: pointer;
+  transition: all var(--transition);
+  user-select: none;
+}
+.project-card:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+/* ---------- Scroll Reveal ---------- */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal-on-scroll.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- Badge Click State ---------- */
+.badge {
+  cursor: pointer;
+  user-select: none;
+}
+.badge:active {
+  transform: scale(0.95);
+}
+
+/* ---------- Contact Link Click State ---------- */
+.contact-social a:active {
+  transform: scale(0.95);
+}
+
+/* ---------- Back Link Click State ---------- */
+.back-link:active {
+  transform: scale(0.98);
+}
+
+/* ---------- Smooth Scroll ---------- */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
 /* ---------- Badges / Pills ---------- */
 .badge {
   display: inline-block;
@@ -401,6 +476,24 @@ button:focus-visible, .button:focus-visible {
   text-transform: uppercase;
 }
 .contact-item a { color: var(--accent); font-weight: 500; }
+
+.contact-email {
+  color: var(--accent);
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+.contact-email:hover .copy-hint { opacity: 1; }
+.copy-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
 .contact-social { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
 
 /* ---------- Footer ---------- */
@@ -490,12 +583,13 @@ input, textarea, select {
   background: var(--bg-card);
   color: var(--text-primary);
   font-size: 0.88rem;
-  transition: border-color var(--transition), box-shadow var(--transition);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.2s ease;
 }
 input:focus, textarea:focus, select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12), inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+  background: var(--bg);
 }
 input::placeholder, textarea::placeholder { color: #bbb; }
 textarea { resize: vertical; min-height: 80px; }

@@ -1,10 +1,23 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { confirmDialog } from '../../composables/useDialog'
 import {
   draft,
   saveSiteConfig, resetSiteDraft, clearAvatar, previewSite,
 } from '../../composables/useSite'
 import { handleImageUpload } from '../../composables/useUpload'
+
+const saving = ref(false)
+
+async function handleSave() {
+  if (saving.value) return
+  saving.value = true
+  try {
+    await saveSiteConfig()
+  } finally {
+    saving.value = false
+  }
+}
 
 async function handleClearAvatar() {
   const ok = await confirmDialog('清除头像', '确认清除当前头像？')
@@ -24,8 +37,8 @@ async function onUploadAvatar(event: Event) {
     <div class="page-header">
       <h2>站点设置</h2>
       <div class="action-row">
-        <button @click="saveSiteConfig">保存站点信息</button>
-        <button class="secondary" @click="resetSiteDraft">恢复当前内容</button>
+        <button @click="handleSave" :disabled="saving">{{ saving ? '保存中...' : '保存站点信息' }}</button>
+        <button class="secondary" @click="resetSiteDraft" :disabled="saving">恢复当前内容</button>
       </div>
     </div>
 

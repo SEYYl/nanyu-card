@@ -1,5 +1,24 @@
 <script setup lang="ts">
+import { watch, onMounted, onUnmounted } from 'vue'
 import { dialogState, confirmResult } from '../../composables/useDialog'
+
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && dialogState.visible) {
+    confirmResult(dialogState.type === 'confirm' ? false : null)
+  }
+}
+
+watch(() => dialogState.visible, (v) => {
+  if (v) {
+    document.addEventListener('keydown', handleKeydown)
+  } else {
+    document.removeEventListener('keydown', handleKeydown)
+  }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
+})
 </script>
 
 <template>

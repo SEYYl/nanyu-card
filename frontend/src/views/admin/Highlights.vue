@@ -1,15 +1,28 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import {
   highlightDraft,
   saveHighlights, addHighlight, removeHighlight, moveHighlight,
 } from '../../composables/useSite'
+
+const saving = ref(false)
+
+async function handleSave() {
+  if (saving.value) return
+  saving.value = true
+  try {
+    await saveHighlights()
+  } finally {
+    saving.value = false
+  }
+}
 </script>
 
 <template>
   <div>
     <div class="page-header">
       <h2>经历亮点</h2>
-      <button @click="saveHighlights">保存经历亮点</button>
+      <button @click="handleSave" :disabled="saving">{{ saving ? '保存中...' : '保存经历亮点' }}</button>
     </div>
     <p style="font-size: 0.86rem; color: var(--text-muted); margin-bottom: 20px;">按时间顺序展示你的关键阶段。</p>
 

@@ -2,13 +2,41 @@
 import { onMounted, ref } from 'vue'
 import { site, socialLinks, loadSiteData } from '../composables/useSite'
 import { projects } from '../composables/useProjects'
+import { createRipple } from '../composables/useRipple'
+import { vScrollReveal } from '../composables/useScrollReveal'
+import { showToast, toastVisible, toastText } from '../composables/useToast'
 
 const loading = ref(true)
+const copied = ref(false)
+
+function copyEmail() {
+  if (!site.email) return
+  navigator.clipboard.writeText(site.email).then(() => {
+    showToast('邮箱已复制')
+  }).catch(() => {
+    // fallback for older browsers
+    const input = document.createElement('textarea')
+    input.value = site.email
+    document.body.appendChild(input)
+    input.select()
+    document.execCommand('copy')
+    document.body.removeChild(input)
+    showToast('邮箱已复制')
+  })
+}
 
 onMounted(async () => {
   const result = await loadSiteData()
   projects.value = result.projects
   loading.value = false
+
+  // 全局波纹效果（事件委托）
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement
+    if (target.matches('button, .button, .badge, .project-card, .nav-links a, .contact-social a, .back-link')) {
+      createRipple(e)
+    }
+  }, true)
 })
 </script>
 
@@ -73,7 +101,7 @@ onMounted(async () => {
     <section id="projects" class="projects-section">
       <h2>项目展示</h2>
       <div v-if="projects.length" class="projects">
-        <article v-for="project in projects" :key="project.id" class="project-card">
+        <article v-for="(project, index) in projects" :key="project.id" class="project-card" v-scroll-reveal :data-reveal-delay="index * 80">
           <div class="project-body">
             <h3>{{ project.title }}</h3>
             <p class="small">{{ project.description }}</p>
@@ -96,7 +124,7 @@ onMounted(async () => {
       <div class="contact-grid">
         <div class="contact-item">
           <span class="contact-label">邮箱</span>
-          <a v-if="site.email" :href="`mailto:${site.email}`">{{ site.email }}</a>
+          <span v-if="site.email" class="contact-email" @click="copyEmail" title="点击复制">{{ site.email }}<span class="copy-hint">复制</span></span>
           <span v-else class="muted">暂无</span>
         </div>
       </div>
@@ -114,5 +142,8 @@ onMounted(async () => {
         <span v-if="site.police">{{ site.police }}</span>
       </span>
     </footer>
+
+    <!-- Toast -->
+    <div v-if="toastVisible" class="toast">{{ toastText }}</div>
   </div>
 </template>

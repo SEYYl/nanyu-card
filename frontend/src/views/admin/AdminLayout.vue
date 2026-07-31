@@ -1,14 +1,37 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AdminSidebar from '../../components/admin/AdminSidebar.vue'
 import { adminAuthenticated } from '../../composables/useAuth'
 import { toastVisible, toastText } from '../../composables/useToast'
 import ConfirmModal from '../../components/common/ConfirmModal.vue'
+import { createRipple } from '../../composables/useRipple'
 
 const router = useRouter()
 const route = useRoute()
 const sidebarOpen = ref(false)
+
+// Esc 关闭侧边栏
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape' && sidebarOpen.value) {
+    sidebarOpen.value = false
+  }
+}
+
+// 全局波纹效果 + 键盘事件
+onMounted(() => {
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement
+    if (target.matches('button, .button, .badge, .nav-item, .back-link')) {
+      createRipple(e as MouseEvent)
+    }
+  }, true)
+  document.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
+})
 
 const pageTitles: Record<string, string> = {
   '/admin': '数据看板',
@@ -54,7 +77,11 @@ watch(adminAuthenticated, (val) => {
       </header>
 
       <main class="admin-content">
-        <router-view />
+        <router-view v-slot="{ Component }">
+          <Transition name="admin-page" mode="out-in">
+            <component :is="Component" />
+          </Transition>
+        </router-view>
       </main>
     </div>
   </div>

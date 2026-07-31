@@ -97,7 +97,7 @@ app.use(
 // ---- 登录速率限制 ----
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 分钟
-  max: 10,
+  max: process.env.NODE_ENV === 'production' ? 10 : 999,
   message: { error: '登录尝试过于频繁，请 15 分钟后再试' },
   standardHeaders: true,
   legacyHeaders: false,

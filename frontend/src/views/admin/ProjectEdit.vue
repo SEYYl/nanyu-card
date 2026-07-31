@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   projects, projectDraft, editingProjectId,
@@ -10,6 +10,7 @@ const router = useRouter()
 const route = useRoute()
 const isNew = route.params.id === 'new'
 const projectId = isNew ? null : Number(route.params.id)
+const saving = ref(false)
 
 onMounted(() => {
   if (projectId) {
@@ -23,9 +24,15 @@ onMounted(() => {
 })
 
 async function handleSave() {
-  await saveProject()
-  if (!editingProjectId.value) {
-    router.push('/admin/projects')
+  if (saving.value) return  // 防抖：防止重复点击
+  saving.value = true
+  try {
+    await saveProject()
+    if (!editingProjectId.value) {
+      router.push('/admin/projects')
+    }
+  } finally {
+    saving.value = false
   }
 }
 
@@ -77,8 +84,8 @@ function handleCancel() {
         </div>
       </div>
       <div class="action-row">
-        <button @click="handleSave">{{ isNew ? '创建项目' : '更新项目' }}</button>
-        <button class="secondary" @click="handleCancel">取消</button>
+        <button @click="handleSave" :disabled="saving">{{ saving ? (isNew ? '创建中...' : '更新中...') : (isNew ? '创建项目' : '更新项目') }}</button>
+        <button class="secondary" @click="handleCancel" :disabled="saving">取消</button>
       </div>
     </div>
   </div>

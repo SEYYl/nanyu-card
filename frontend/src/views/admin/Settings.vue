@@ -1,16 +1,24 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { confirmDialog, promptDialog } from '../../composables/useDialog'
 import { changePassword, adminLogout } from '../../composables/useAuth'
 import { adminMessage } from '../../composables/useToast'
 
 const router = useRouter()
+const loading = ref(false)
 
 async function handleChangePassword() {
-  const newPassword = await promptDialog('修改密码', '请输入新密码（至少 4 位）')
-  if (!newPassword) return
-  const result = await changePassword(newPassword)
-  adminMessage.value = result.message
+  if (loading.value) return
+  loading.value = true
+  try {
+    const newPassword = await promptDialog('修改密码', '请输入新密码（至少 8 位）')
+    if (!newPassword) return
+    const result = await changePassword(newPassword)
+    adminMessage.value = result.message
+  } finally {
+    loading.value = false
+  }
 }
 
 async function handleLogout() {
@@ -34,7 +42,7 @@ async function handleLogout() {
         <p style="font-size: 0.86rem; color: var(--text-muted);">点击下方按钮，输入新密码（至少 4 位字符）。</p>
       </div>
       <div class="action-row">
-        <button @click="handleChangePassword">修改密码</button>
+        <button @click="handleChangePassword" :disabled="loading">{{ loading ? '处理中...' : '修改密码' }}</button>
       </div>
     </div>
 

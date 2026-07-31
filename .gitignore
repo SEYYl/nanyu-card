@@ -10,6 +10,10 @@ dist/
 data/
 uploads/
 
+# Local workspace
+.workbuddy-ai/
+outputs/
+
 # Env / secrets
 .env
 .env.local
